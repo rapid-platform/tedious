@@ -50,7 +50,7 @@ class StreamBuffer {
   async waitForChunk() {
     const result = await this.iterator.next();
     if (result.done) {
-      throw new Error('unexpected end of data');
+      return -1;
     }
 
     if (this.position === this.buffer.length) {
@@ -82,7 +82,10 @@ class Parser {
 
     while (true) {
       try {
-        await streamBuffer.waitForChunk();
+        const rc = await streamBuffer.waitForChunk();
+        if (rc === -1 && streamBuffer.position === streamBuffer.buffer.length) {
+          return;
+        }
       } catch (err: unknown) {
         if (streamBuffer.position === streamBuffer.buffer.length) {
           return;
