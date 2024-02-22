@@ -34,14 +34,10 @@ class Parser {
     parser.colMetadata = colMetadata;
 
     while (true) {
-      try {
-        await parser.waitForChunk();
-      } catch (err: unknown) {
-        if (parser.position === parser.buffer.length) {
-          return;
-        }
+      const result = await parser.waitForChunk();
 
-        throw err;
+      if (result === -1 && parser.position === parser.buffer.length) {
+        return;
       }
 
       while (parser.buffer.length >= parser.position + 1) {
@@ -388,7 +384,7 @@ class Parser {
   async waitForChunk() {
     const result = await this.iterator.next();
     if (result.done) {
-      throw new Error('unexpected end of data');
+      return -1;
     }
 
     if (this.position === this.buffer.length) {
